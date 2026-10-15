@@ -165,8 +165,10 @@ styles:
     size: 22
   glow:
     gap: 0                   # px of clear space between the fill and the glow
-    softness: 33             # px blur
-    strength: 66             # % opacity
+    softness: 32             # px blur
+    strength: 75             # % opacity
+    edge: 55                 # % opacity of a dark edge over the glow, so it sits behind the fill; 0 = none
+    edge_width: 12           # px the edge takes to fade out
     drag: 10                 # % extra while dragging
 ```
 

@@ -179,9 +179,9 @@ const drag = async (el, from, to) => { ptr(el, "pointerdown", from); ptr(el, "po
   // glow: lights only by default
   const cg = mk({ entity: "cover.s1" });
   ok(cg.shadowRoot.querySelector(".track").style.getPropertyValue("--es-glow-a") === "" && !q(cg, ".track").classList.contains("lit"), "no glow on a cover by default");
-  ok(q(mk({ entity: "cover.s1", glow: true }), ".track").style.getPropertyValue("--es-glow-a") === "66%", "glow: true turns it on for a cover");
+  ok(q(mk({ entity: "cover.s1", glow: true }), ".track").style.getPropertyValue("--es-glow-a") === "75%", "glow: true turns it on for a cover");
   ok(q(mk({ entity: "cover.s1", styles: { glow: { strength: 40 } } }), ".track").style.getPropertyValue("--es-glow-a") === "40%", "styles.glow turns it on for a cover");
-  ok(q(mk({ entity: "light.a" }), ".track").style.getPropertyValue("--es-glow-a") === "66%", "lights still glow by default");
+  ok(q(mk({ entity: "light.a" }), ".track").style.getPropertyValue("--es-glow-a") === "75%", "lights still glow by default");
 
   // light cards unaffected
   const la = mk({ entity: "light.a" });

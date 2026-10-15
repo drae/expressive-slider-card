@@ -80,8 +80,10 @@
  *       size: 22
  *     glow:
  *       gap: 0                 # px of clear space between the fill and the glow
- *       softness: 33           # px blur
- *       strength: 66           # % opacity
+ *       softness: 32           # px blur
+ *       strength: 75           # % opacity
+ *       edge: 55               # % opacity of a dark edge over the glow, so it sits behind the fill; 0 = none
+ *       edge_width: 12         # px the edge takes to fade out
  *       drag: 10               # % extra while dragging
  *
  * Elements: card, header, name (alias title), value (alias state), info (all chips),
@@ -108,7 +110,7 @@ const MOVING_STATES = new Set(["opening", "closing"]);
 const COVER_DEFAULTS = { fill: "open", presets: [0, 25, 50, 75, 100], preset_style: "menu", ticks: true, detent: 3,
   moving_handle: "target", stop_button: true, stagger: 400 };
 const GROUP_DEFAULTS = { band: "on", show: "band", value: "mean", label: "range", mode: "scale", targets: "on", stagger: 150 };
-const GLOW_DEFAULTS = { gap: 0, softness: 33, strength: 66, drag: 10 };
+const GLOW_DEFAULTS = { gap: 0, softness: 32, strength: 75, drag: 10, edge: 55, edge_width: 12 };
 const PIP_TINT = 25;
 const GROUP_PENDING_MS = 4000; // sent levels are shown until the lights report them, or this long after the last command
 const TARGET_STALE_MS = 8000;  // a cover target is dropped after this long without movement
@@ -277,8 +279,9 @@ const CSS_TEXT = `
   .active::before { --gg: var(--es-glow-gap, 0px); content: ""; position: absolute; pointer-events: none; opacity: 0;
                     transition: opacity 250ms, box-shadow 250ms; inset: calc(-1 * var(--gg));
                     border-radius: calc(var(--r) + var(--gg)) calc(var(--ir) + var(--gg)) calc(var(--ir) + var(--gg)) calc(var(--r) + var(--gg));
-                    box-shadow: 0 0 calc(var(--es-glow-blur, 33px) + var(--es-glow-blur-lift, 0px)) 0
-                                color-mix(in srgb, var(--es-active) calc(var(--es-glow-a, 66%) + var(--es-glow-lift, 0%)), transparent); }
+                    box-shadow: 0 0 var(--es-glow-edge-w, 12px) 0 rgb(0 0 0 / var(--es-glow-edge, 55%)),
+                                0 0 calc(var(--es-glow-blur, 32px) + var(--es-glow-blur-lift, 0px)) 0
+                                color-mix(in srgb, var(--es-active) calc(var(--es-glow-a, 75%) + var(--es-glow-lift, 0%)), transparent); }
   .track.lit .active::before { opacity: 1; }
   .handle { position: absolute; z-index: 2; top: -6px; bottom: -6px; width: var(--hw); border-radius: 2px;
             left: calc(var(--pc) * (100% - var(--hw))); background: var(--es-handle); }
@@ -692,6 +695,8 @@ class ExpressiveSliderCard extends HTMLElement {
     setVar(this._track, "--es-glow-blur", g && px(g.softness));
     setVar(this._track, "--es-glow-a", g && `${g.strength}%`);
     setVar(this._track, "--es-glow-drag", g && `${g.drag}%`);
+    setVar(this._track, "--es-glow-edge", g && `${g.edge}%`);
+    setVar(this._track, "--es-glow-edge-w", g && px(g.edge_width));
 
     const pip = cfg.icon !== false;
     this._pip.hidden = !pip;

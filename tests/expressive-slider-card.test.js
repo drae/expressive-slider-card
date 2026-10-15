@@ -26,10 +26,13 @@ ok(!r.querySelector(".pip").hidden, "pip shown by default");
 ok(r.querySelector(".pip").style.getPropertyValue("--es-pip-bg").includes("25%"), "pip tinted 25%");
 ok(r.querySelector(".stop").classList.contains("hide"), "stop hidden with track-right chip");
 ok(r.querySelector('[data-slot="track-right"]').textContent.includes("3.4"), "power chip rendered");
-ok(t.style.getPropertyValue("--es-glow-a") === "66%" && t.style.getPropertyValue("--es-glow-gap") === "0px" && t.style.getPropertyValue("--es-glow-blur") === "33px", "glow defaults: gap 0, softness 33, strength 66");
+ok(t.style.getPropertyValue("--es-glow-a") === "75%" && t.style.getPropertyValue("--es-glow-gap") === "0px" && t.style.getPropertyValue("--es-glow-blur") === "32px", "glow defaults: gap 0, softness 32, strength 75");
+ok(t.style.getPropertyValue("--es-glow-edge") === "55%" && t.style.getPropertyValue("--es-glow-edge-w") === "12px", "edge defaults: 55%, 12px");
 { // glow look under styles: glow:; styles glow: false turns it off
   const sg = mk({ entity: "light.a", styles: { glow: { gap: 2, strength: 30 }, name: { size: 14 } } }).shadowRoot.querySelector(".track");
-  ok(sg.style.getPropertyValue("--es-glow-gap") === "2px" && sg.style.getPropertyValue("--es-glow-a") === "30%" && sg.style.getPropertyValue("--es-glow-blur") === "33px", "styles.glow sets gap/strength, keeps default softness");
+  ok(sg.style.getPropertyValue("--es-glow-gap") === "2px" && sg.style.getPropertyValue("--es-glow-a") === "30%" && sg.style.getPropertyValue("--es-glow-blur") === "32px", "styles.glow sets gap/strength, keeps default softness");
+  const eg = mk({ entity: "light.a", styles: { glow: { edge: 0, edge_width: 6 } } }).shadowRoot.querySelector(".track");
+  ok(eg.style.getPropertyValue("--es-glow-edge") === "0%" && eg.style.getPropertyValue("--es-glow-edge-w") === "6px", "styles.glow sets edge and edge_width");
   const lg = mk({ entity: "light.a", styles: { glow: [{ gap: 4 }, { drag: 20 }] } }).shadowRoot.querySelector(".track");
   ok(lg.style.getPropertyValue("--es-glow-gap") === "4px" && lg.style.getPropertyValue("--es-glow-drag") === "20%", "styles.glow as a list of single properties");
   const nf = mk({ entity: "light.a", styles: { glow: false } }).shadowRoot.querySelector(".track");
@@ -88,7 +91,7 @@ w.requestAnimationFrame(() => {
   b.setConfig({ entity: "light.b", icon: false, glow: false });
   ok(rb.querySelector(".pip").hidden, "icon:false hides pip");
   ok(!rb.querySelector("ha-card").classList.contains("outside"), "outside class cleared");
-  ok(rb.querySelector(".track").style.getPropertyValue("--es-glow-a") === "", "glow vars cleared");
+  ok(rb.querySelector(".track").style.getPropertyValue("--es-glow-a") === "" && rb.querySelector(".track").style.getPropertyValue("--es-glow-edge") === "", "glow vars cleared");
 
   // tap on pip runs toggle, not a value change
   const n = calls.length;
