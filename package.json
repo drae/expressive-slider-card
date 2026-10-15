@@ -1,0 +1,13 @@
+{
+  "name": "expressive-slider-card",
+  "private": true,
+  "description": "Material 3 Expressive-style slider card for Home Assistant",
+  "license": "BSD-3-Clause",
+  "author": "Paul Owen",
+  "scripts": {
+    "test": "for f in tests/*.test.js; do echo \"# $f\"; node \"$f\" || exit 1; done"
+  },
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}
