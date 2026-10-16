@@ -100,6 +100,7 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
+const VERSION = "1.1.0";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
 const DAYLIGHT_RGB = [242, 207, 122]; // cover fill
 const THROTTLE_MS = 300;
@@ -1201,6 +1202,7 @@ class ExpressiveSliderCard extends HTMLElement {
 }
 
 if (!customElements.get("expressive-slider-card")) {
+  console.info(`%c EXPRESSIVE-SLIDER-CARD %c ${VERSION} `, "background:#c97e0b;color:#fff;font-weight:600", "background:#28282a;color:#fff");
   customElements.define("expressive-slider-card", ExpressiveSliderCard);
   window.customCards = window.customCards || [];
   window.customCards.push({
