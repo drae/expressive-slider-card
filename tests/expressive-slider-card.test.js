@@ -113,6 +113,19 @@ w.requestAnimationFrame(() => {
   tc.dispatchEvent(Object.assign(new w.Event("keydown"), { key: "ArrowRight", preventDefault() {} }));
   ok(tc.getAttribute("aria-valuenow") === "100", "on/off light: arrow key steps to 100: " + tc.getAttribute("aria-valuenow"));
 
+  // min/max narrow the range: TV volume 10 on a 0–25 slider sits at 40%, a drag to the end sends 25%
+  states["media_player.tv"] = { state: "on", attributes: { volume_level: 0.1 } };
+  const v = mk({ entity: "media_player.tv", max: 25 }), tv = v.shadowRoot.querySelector(".track");
+  ok(Math.abs(Number(tv.style.getPropertyValue("--es-p")) - 0.4) < 1e-9 && tv.getAttribute("aria-valuemax") === "25", "max 25: volume 10 at 40%: " + tv.style.getPropertyValue("--es-p"));
+  ok(v.shadowRoot.querySelector(".val").textContent === "10%", "max 25: label keeps the real value: " + v.shadowRoot.querySelector(".val").textContent);
+  tv.getBoundingClientRect = () => ({ left: 0, width: 200, top: 0, height: 56 });
+  const evv = (type, x) => { const e = new w.Event(type, { bubbles: true }); e.clientX = x; e.button = 0; e.pointerId = 1; tv.dispatchEvent(e); };
+  evv("pointerdown", 10); evv("pointermove", 200); evv("pointerup", 200);
+  ok(JSON.stringify(calls.at(-1)) === JSON.stringify(["media_player", "volume_set", { entity_id: "media_player.tv", volume_level: 0.25 }]), "max 25: drag to the end sends 0.25 " + JSON.stringify(calls.at(-1)));
+  states["media_player.tv"] = { state: "on", attributes: { volume_level: 0.4 } };
+  v.hass = hass();
+  ok(Number(tv.style.getPropertyValue("--es-p")) === 1, "max 25: a louder TV pins the handle at the end");
+
   // unsupported domain / disconnect cleanup
   try { mk({ entity: "switch.x" }); ok(false, "should throw"); } catch (e) { ok(/Unsupported/.test(e.message), "rejects switch domain"); }
   a.remove();

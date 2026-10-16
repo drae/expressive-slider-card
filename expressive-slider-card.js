@@ -13,6 +13,8 @@
  *   bubble: drag               # drag | always | never
  *   live: false                # true = send updates while dragging (throttled)
  *   step: 1
+ *   min: 0                     # optional range limits, e.g. max: 25 for a TV that never goes louder;
+ *   max: 100                   # the default is the entity's own range. Not used on covers or light groups.
  *   icon: mdi:sofa             # optional; defaults to the entity's own icon; false hides it
  *   icon_position: track       # track (a round pip inside the start of the slider) | outside (left of the slider)
  *   glow: false                # the soft light round the fill; on by default for lights only
@@ -612,7 +614,10 @@ class ExpressiveSliderCard extends HTMLElement {
 
   _range() {
     const r = this._domain.range?.(this._stateObj) ?? [0, 100, this._domain.step?.(this._stateObj) ?? this._config.step];
-    return { min: Number(r[0]), max: Number(r[1]), step: Number(r[2] ?? this._config.step) || 1 };
+    const own = !this._cover && !this._group;
+    const min = own && this._config.min != null ? this._config.min : r[0];
+    const max = own && this._config.max != null ? this._config.max : r[1];
+    return { min: Number(min), max: Number(max), step: Number(r[2] ?? this._config.step) || 1 };
   }
 
   _build() {

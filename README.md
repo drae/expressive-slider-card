@@ -49,6 +49,7 @@ name: Sofa
 | `bubble` | `drag` | `drag`, `always` or `never`. |
 | `live` | `false` | `true` sends updates while dragging (throttled to 300 ms). |
 | `step` | `1` | The value step. |
+| `min` / `max` | entity range | Limit the slider's range, e.g. `max: 25` for a TV whose volume never goes higher. Not used on covers or light groups. |
 | `glow` | lights only | `true` or `false`: the soft light round the fill. Set its look under `styles.glow`. |
 | `info` | none | Extra readings, see [Info chips](#info-chips). |
 | `info_position` | `track` | The default `position` for info chips. |
