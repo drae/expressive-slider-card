@@ -63,6 +63,7 @@
  *     stagger: 150             # ms between each light's command
  *     area: living_room        # take the members from this area instead of the entity's entity_id list
  *     min_lights: 0            # hide the card while there are fewer dimmable members than this
+ *     min_on: 0                # hide the card while fewer dimmable members than this are on
  *                              # Acts only while a dimmable light is on. Scaling remembers the spread, so lights
  *                              # pinned at 100% get their differences back. On/off-only members are left out.
  *   styles:                    # one block per element
@@ -793,8 +794,10 @@ class ExpressiveSliderCard extends HTMLElement {
   _render() {
     if (!this._track || !this._config) return;
     if (this._group) {
-      const n = this._members(this._stateObj).filter((id) => this._hass?.states[id] && !onOffOnly(this._hass.states[id])).length;
-      this.style.display = n < (Number(this._group.min_lights) || 0) ? "none" : "";
+      const dim = this._members(this._stateObj).map((id) => this._hass?.states[id]).filter((x) => x && !onOffOnly(x));
+      const on = dim.filter((x) => x.state === "on").length;
+      const g = this._group;
+      this.style.display = dim.length < (Number(g.min_lights) || 0) || on < (Number(g.min_on) || 0) ? "none" : "";
     }
     const s = this._stateObj;
     this._unavailable = !s || s.state === "unavailable";

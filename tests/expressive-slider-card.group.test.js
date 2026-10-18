@@ -194,6 +194,14 @@ const settle = (el, sent) => {
   one.hass = ahass();
   ok(one.style.display === "", "min_lights: shown once the area has two");
   ok(mka({ entity: "light.room", group: { area: "lounge" } }).style.display === "", "no min_lights: always shown");
+  // min_on hides the card until enough dimmable lights are on
+  reg.entities = { ...reg.entities, "light.c": { entity_id: "light.c", area_id: "lounge" } };
+  states["light.a"] = lt(50); states["light.b"] = lt(0); states["light.c"] = lt(0); states["light.d"] = lt(0);
+  const mo = mka({ entity: "light.room", group: { area: "lounge", min_on: 2 } });
+  ok(mo.style.display === "none", "min_on: hidden with one light on");
+  states["light.c"] = lt(30);
+  mo.hass = ahass();
+  ok(mo.style.display === "", "min_on: shown with two lights on");
 
   for (const el of w.document.querySelectorAll("expressive-slider-card")) el.remove();
   ok(true, "disconnect without error");
