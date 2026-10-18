@@ -103,7 +103,7 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
 const DAYLIGHT_RGB = [242, 207, 122]; // cover fill
 const THROTTLE_MS = 300;

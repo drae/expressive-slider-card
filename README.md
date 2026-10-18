@@ -136,6 +136,21 @@ group:
   mode: scale     # scale: keep the lights' differences | set: all to the same level
   targets: on     # on: only lights already on | all: lights that are off come on too
   stagger: 150    # ms between each light's command
+  area: lounge    # take the members from this area instead of the entity's member list
+  min_lights: 0   # hide the card while there are fewer dimmable members than this
+  min_on: 0       # hide the card while fewer dimmable members than this are on
+```
+
+With `area`, the members are the lights in that Home Assistant area: a light's own area, or its device's when it has none. Hidden and config entities are left out, and so is the card's own entity. A light added to the area joins without a config change, and the fill blends the colours of the lights that are on. Use it for groups that don't list their members, such as Zigbee2MQTT groups; the card's entity is still what `more-info` and `toggle` act on.
+
+```yaml
+type: custom:expressive-slider-card
+entity: light.lounge   # a Zigbee2MQTT group
+name: All lights
+icon: mdi:lightbulb-group
+group:
+  area: living_room
+  min_lights: 2        # only in rooms with more than one light
 ```
 
 The slider acts only while at least one dimmable light is on. In `scale` mode the card remembers the original spread, so lights pushed to 100% get their differences back when you drag down again. Members that only switch on and off are left out.
