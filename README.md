@@ -1,6 +1,6 @@
 # Expressive Slider Card
 
-A Material 3 "Expressive"-style slider card for Home Assistant. The track is split, with a gap either side of a thin handle. The fill takes its colour from the entity, and a value bubble pops up above the handle while you drag.
+A Material 3 "Expressive"-style slider card for Home Assistant. The track is split, with a gap either side of a thin handle. The fill takes its colour from the entity. Without one, lights default to warm white, covers to sky blue and media players to violet. A value bubble pops up above the handle while you drag.
 
 It is a single plain JavaScript file with no dependencies.
 

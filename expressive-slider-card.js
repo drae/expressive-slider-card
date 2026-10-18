@@ -103,9 +103,10 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
-const DAYLIGHT_RGB = [242, 207, 122]; // cover fill
+const SKY_RGB = [143, 195, 230]; // cover fill
+const VIOLET_RGB = [179, 157, 219]; // media player (volume) fill
 const THROTTLE_MS = 300;
 const HOLD_MS = 500;
 const DOUBLE_TAP_MS = 250;
@@ -170,6 +171,13 @@ const DOMAINS = {
   input_number: numeric("input_number"),
   number: numeric("number"),
 };
+
+// Default fills, one per domain so lights, covers and volume read apart.
+const DEFAULT_RGB = new Map([
+  [DOMAINS.light, FALLBACK_RGB],
+  [DOMAINS.cover, SKY_RGB],
+  [DOMAINS.media_player, VIOLET_RGB],
+]);
 
 const parseColor = (c) => {
   if (Array.isArray(c)) return c;
@@ -771,7 +779,7 @@ class ExpressiveSliderCard extends HTMLElement {
     // A cover is never "off": closed is just position 0.
     const on = !!s && (this._cover ? !["unavailable", "unknown"].includes(s.state) : !OFF_STATES.has(s.state));
     const rgb = parseColor(this._style.color) ?? (on ? (this._group?.area ? this._blend() : s.attributes.rgb_color) : null) ??
-      (this._domain === DOMAINS.light ? FALLBACK_RGB : this._cover ? DAYLIGHT_RGB : null);
+      DEFAULT_RGB.get(this._domain) ?? null;
     const active = rgb ? `rgb(${rgb.join(",")})` : "var(--state-icon-active-color, var(--primary-color))";
     const pb = this._style.pipBg;
     return {
