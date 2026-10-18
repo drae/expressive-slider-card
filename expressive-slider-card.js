@@ -61,6 +61,8 @@
  *     mode: scale              # scale (keep the lights' differences) | set (all to the same level)
  *     targets: on              # on (only lights already on) | all (lights that are off come on too)
  *     stagger: 150             # ms between each light's command
+ *     area: living_room        # take the members from this area instead of the entity's entity_id list
+ *     min_lights: 0            # hide the card while there are fewer dimmable members than this
  *                              # Acts only while a dimmable light is on. Scaling remembers the spread, so lights
  *                              # pinned at 100% get their differences back. On/off-only members are left out.
  *   styles:                    # one block per element
@@ -459,7 +461,8 @@ class ExpressiveSliderCard extends HTMLElement {
   }
 
   _members(s) {
-    const ids = (this._cover || this._group) && s?.attributes.entity_id;
+    const area = this._group?.area;
+    const ids = area ? this._areaLights(area) : (this._cover || this._group) && s?.attributes.entity_id;
     if (!Array.isArray(ids)) return [];
     if (!this._group) return ids;
     // Light groups can nest; flatten to the lights.
@@ -474,6 +477,20 @@ class ExpressiveSliderCard extends HTMLElement {
     };
     ids.forEach(add);
     return out;
+  }
+
+  // The area's lights, by the entity's own area or else its device's; hidden and config entities are left out.
+  _areaLights(area) {
+    const h = this._hass;
+    if (!h?.entities) return [];
+    const c = this._areaCache;
+    if (c?.area === area && c.entities === h.entities && c.devices === h.devices) return c.ids;
+    const ids = Object.values(h.entities)
+      .filter((e) => e.entity_id.startsWith("light.") && e.entity_id !== this._config.entity && !e.hidden && !e.entity_category &&
+        (e.area_id ?? h.devices?.[e.device_id]?.area_id) === area)
+      .map((e) => e.entity_id);
+    this._areaCache = { area, entities: h.entities, devices: h.devices, ids };
+    return ids;
   }
 
   // Dimmable members and their levels; sent levels stand in until the lights report back.
@@ -752,7 +769,7 @@ class ExpressiveSliderCard extends HTMLElement {
     const s = this._stateObj;
     // A cover is never "off": closed is just position 0.
     const on = !!s && (this._cover ? !["unavailable", "unknown"].includes(s.state) : !OFF_STATES.has(s.state));
-    const rgb = parseColor(this._style.color) ?? (on ? s.attributes.rgb_color : null) ??
+    const rgb = parseColor(this._style.color) ?? (on ? (this._group?.area ? this._blend() : s.attributes.rgb_color) : null) ??
       (this._domain === DOMAINS.light ? FALLBACK_RGB : this._cover ? DAYLIGHT_RGB : null);
     const active = rgb ? `rgb(${rgb.join(",")})` : "var(--state-icon-active-color, var(--primary-color))";
     const pb = this._style.pipBg;
@@ -765,9 +782,20 @@ class ExpressiveSliderCard extends HTMLElement {
     };
   }
 
+  // The mean colour of the members that are on.
+  _blend() {
+    const cs = this._members(this._stateObj).map((id) => this._hass?.states[id])
+      .filter((x) => x?.state === "on" && Array.isArray(x.attributes.rgb_color)).map((x) => x.attributes.rgb_color);
+    return cs.length ? [0, 1, 2].map((i) => Math.round(cs.reduce((a, c) => a + c[i], 0) / cs.length)) : null;
+  }
+
   // Full render after a state change.
   _render() {
     if (!this._track || !this._config) return;
+    if (this._group) {
+      const n = this._members(this._stateObj).filter((id) => this._hass?.states[id] && !onOffOnly(this._hass.states[id])).length;
+      this.style.display = n < (Number(this._group.min_lights) || 0) ? "none" : "";
+    }
     const s = this._stateObj;
     this._unavailable = !s || s.state === "unavailable";
     this._r = s ? this._range() : { min: 0, max: 100, step: 1 };

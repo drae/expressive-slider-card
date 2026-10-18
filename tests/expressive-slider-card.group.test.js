@@ -153,6 +153,48 @@ const settle = (el, sent) => {
   const plain = mk({ entity: "light.g" });
   ok(q(plain, ".range").hidden && val(plain) === "100%", "no group: key = plain light slider");
 
+  // area: members come from the area registry instead of an entity_id list
+  reset(60, 20, 0, 80);
+  states["light.room"] = { state: "on", attributes: { rgb_color: [1, 2, 3] } }; // a Zigbee group: no member list
+  states["light.a"].attributes.rgb_color = [255, 200, 100];
+  states["light.b"].attributes.rgb_color = [255, 100, 0];
+  states["light.f"] = lt(90);
+  const reg = {
+    entities: {
+      "light.a": { entity_id: "light.a", area_id: "lounge" },
+      "light.b": { entity_id: "light.b", device_id: "dev1" },               // area from its device
+      "light.c": { entity_id: "light.c", area_id: "lounge" },
+      "light.d": { entity_id: "light.d", area_id: "study", device_id: "dev1" }, // its own area beats the device's
+      "light.e": { entity_id: "light.e", area_id: "lounge" },               // on/off-only
+      "light.f": { entity_id: "light.f", area_id: "lounge", hidden: true },
+      "light.room": { entity_id: "light.room", area_id: "lounge" },         // the card's own entity
+      "sensor.x": { entity_id: "sensor.x", area_id: "lounge" },
+    },
+    devices: { dev1: { area_id: "lounge" } },
+  };
+  const ahass = () => ({ ...hass(), ...reg });
+  const mka = (cfg) => { const el = w.document.createElement("expressive-slider-card"); el.setConfig(cfg); el.hass = ahass(); w.document.body.append(el); return el; };
+  const ar = mka({ entity: "light.room", group: { area: "lounge" }, double_tap_action: "none" });
+  rect(ar);
+  ok(val(ar) === "20%–60%", "area members: entity or device area, hidden and own entity left out: " + val(ar));
+  ok(q(ar, ".track").style.getPropertyValue("--es-active") === "rgb(255,150,50)", "area fill = blend of the lit members: " + q(ar, ".track").style.getPropertyValue("--es-active"));
+  n0 = calls.length;
+  await drag(ar, 80, 120);
+  await sleep(400);
+  ok(Object.keys(sentSince(n0)).sort().join() === "light.a,light.b", "area drag sends to the lit area lights only: " + JSON.stringify(sentSince(n0)));
+  // a light added to the area joins without a config change
+  reg.entities = { ...reg.entities, "light.d": { entity_id: "light.d", area_id: "lounge" } };
+  states["light.d"] = lt(100);
+  ar.hass = ahass();
+  ok(val(ar).endsWith("100%"), "new area light picked up: " + val(ar));
+  // min_lights hides the card until the area has enough dimmable lights
+  const one = mka({ entity: "light.room", group: { area: "study", min_lights: 2 } });
+  ok(one.style.display === "none", "min_lights: hidden with fewer dimmable lights");
+  reg.entities = { ...reg.entities, "light.c": { entity_id: "light.c", area_id: "study" }, "light.d": { entity_id: "light.d", area_id: "study" } };
+  one.hass = ahass();
+  ok(one.style.display === "", "min_lights: shown once the area has two");
+  ok(mka({ entity: "light.room", group: { area: "lounge" } }).style.display === "", "no min_lights: always shown");
+
   for (const el of w.document.querySelectorAll("expressive-slider-card")) el.remove();
   ok(true, "disconnect without error");
 })();
