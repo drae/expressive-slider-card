@@ -175,7 +175,7 @@ styles:
     height: 56
     radius: 20
   pip:
-    size: 36                 # the round background behind the icon
+    size: 40                 # the round background behind the icon
     background: 90           # number: % of the slider colour mixed with black while on; or a fixed colour
   icon:
     size: 22
@@ -193,7 +193,7 @@ styles:
 - Properties use CSS names. `size`, `weight` and `color` are short for `font-size`, `font-weight` and `color`.
 - `track` also takes `inner-radius`, `gap`, `handle-width` and `tile` (the colour the empty part is mixed from).
 - `pip.background` applies while the entity is on. When it is off, the pip always uses the automatic background.
-- While on, the icon is white at 70%, or black at 70% on a pale slider colour. `icon.color` overrides it.
+- While on, the icon is white at 70%. It turns black at 70% only when white would have under 2:1 contrast with the pip, as on warm white. `icon.color` overrides it.
 - `info.color` and `track_info.background` are defaults. A chip's own settings override them.
 - `glow: false` under `styles` turns the glow off.
 - Each block can also be a list of single properties. A plain string is used as raw CSS.

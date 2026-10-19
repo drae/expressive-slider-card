@@ -25,6 +25,8 @@ ok(t.classList.contains("lit"), "lit when on");
 ok(!r.querySelector(".pip").hidden, "pip shown by default");
 ok(r.querySelector(".pip").style.getPropertyValue("--es-pip-bg").includes("90%"), "pip tinted 90%");
 ok(r.querySelector(".pip").style.getPropertyValue("--es-pip-fg") === "rgba(0,0,0,.7)", "lit icon dark on a pale fill: " + r.querySelector(".pip").style.getPropertyValue("--es-pip-fg"));
+ok(mk({ entity: "light.a", styles: { track: { color: "#c97e0b" } } }).shadowRoot.querySelector(".pip").style.getPropertyValue("--es-pip-fg") === "rgba(255,255,255,.7)", "lit icon white on amber");
+ok(mk({ entity: "light.a", styles: { track: { color: "#ffa050" } } }).shadowRoot.querySelector(".pip").style.getPropertyValue("--es-pip-fg") === "rgba(255,255,255,.7)", "lit icon white on orange");
 ok(r.querySelector(".stop").classList.contains("hide"), "stop hidden with track-right chip");
 ok(r.querySelector('[data-slot="track-right"]').textContent.includes("3.4"), "power chip rendered");
 ok(t.style.getPropertyValue("--es-glow-a") === "75%" && t.style.getPropertyValue("--es-glow-gap") === "0px" && t.style.getPropertyValue("--es-glow-blur") === "32px", "glow defaults: gap 0, softness 32, strength 75");

@@ -79,7 +79,7 @@
  *       height: 56
  *       radius: 20
  *     pip:
- *       size: 36               # the round background behind the icon
+ *       size: 40               # the round background behind the icon
  *       background: 90         # number = % of the slider colour mixed with black while on; or a fixed colour
  *     icon:
  *       size: 22
@@ -103,7 +103,7 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
 const SKY_RGB = [143, 195, 230]; // cover fill
 const VIOLET_RGB = [179, 157, 219]; // media player (volume) fill
@@ -192,6 +192,10 @@ const parseColor = (c) => {
 };
 
 const isLight = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b > 150;
+// WCAG relative luminance; the lit icon stays white until it would have under 2:1 contrast with the pip.
+const luminance = (rgb) => rgb.map((c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; })
+  .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+const whiteReads = (rgb) => 1.05 / (luminance(rgb) + 0.05) >= 2;
 
 const STYLE_TARGETS = {
   card: "ha-card", header: ".head", name: ".name", title: ".name", value: ".val", state: ".val",
@@ -263,7 +267,7 @@ const TILE = "var(--es-tile, var(--bubble-main-background-color, var(--backgroun
 
 const CSS_TEXT = `
   :host { display: block; }
-  ha-card { position: relative; padding: 12px 16px 16px; overflow: visible; --pip: var(--es-pip-size, 36px); }
+  ha-card { position: relative; padding: 12px 16px 16px; overflow: visible; --pip: var(--es-pip-size, 40px); }
   ha-card.transparent { background: none; border: none; box-shadow: none; padding: 4px 0 8px; }
   [hidden] { display: none !important; }
   .head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 10px;
@@ -788,8 +792,8 @@ class ExpressiveSliderCard extends HTMLElement {
       inactive: on ? `color-mix(in srgb, ${active} 24%, ${TILE})` : TILE,
       onActive: rgb ? (isLight(rgb) ? "rgba(0,0,0,.75)" : "#fff") : "var(--text-primary-color, #fff)",
       pipOn: typeof pb === "string" ? pb : `color-mix(in srgb, ${active} ${pb ?? PIP_TINT}%, #000)`,
-      // The lit icon sits on a near-full-colour pip, so it needs the fill's contrast colour, softened.
-      pipFg: rgb && isLight(rgb) ? "rgba(0,0,0,.7)" : "rgba(255,255,255,.7)",
+      // Judged against the pip itself: the fill mixed with black by the tint.
+      pipFg: rgb && !whiteReads(rgb.map((c) => c * (typeof pb === "number" ? pb : PIP_TINT) / 100)) ? "rgba(0,0,0,.7)" : "rgba(255,255,255,.7)",
     };
   }
 
