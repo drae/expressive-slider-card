@@ -80,7 +80,7 @@
  *       radius: 20
  *     pip:
  *       size: 40               # the round background behind the icon
- *       background: 90         # number = % of the slider colour mixed with black while on; or a fixed colour
+ *       background: 80         # number = % of the slider colour mixed with black while on; or a fixed colour
  *     icon:
  *       size: 22
  *     glow:
@@ -103,7 +103,7 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
-const VERSION = "1.4.1";
+const VERSION = "1.4.2";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
 const SKY_RGB = [143, 195, 230]; // cover fill
 const VIOLET_RGB = [179, 157, 219]; // media player (volume) fill
@@ -118,7 +118,7 @@ const COVER_DEFAULTS = { fill: "open", presets: [0, 25, 50, 75, 100], preset_sty
   moving_handle: "target", stop_button: true, stagger: 400 };
 const GROUP_DEFAULTS = { band: "on", show: "band", value: "mean", label: "range", mode: "scale", targets: "on", stagger: 150 };
 const GLOW_DEFAULTS = { gap: 0, softness: 32, strength: 75, drag: 10, edge: 55, edge_width: 12 };
-const PIP_TINT = 90;
+const PIP_TINT = 80;
 const GROUP_PENDING_MS = 4000; // sent levels are shown until the lights report them, or this long after the last command
 const TARGET_STALE_MS = 8000;  // a cover target is dropped after this long without movement
 const TARGET_MAX_MS = 180000;  // and always after this long
@@ -192,10 +192,6 @@ const parseColor = (c) => {
 };
 
 const isLight = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b > 150;
-// WCAG relative luminance; the lit icon stays white until it would have under 2:1 contrast with the pip.
-const luminance = (rgb) => rgb.map((c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; })
-  .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
-const whiteReads = (rgb) => 1.05 / (luminance(rgb) + 0.05) >= 2;
 
 const STYLE_TARGETS = {
   card: "ha-card", header: ".head", name: ".name", title: ".name", value: ".val", state: ".val",
@@ -316,6 +312,14 @@ const CSS_TEXT = `
   .pip .shade svg { display: block; width: var(--es-icon-size, 22px); height: var(--es-icon-size, 22px); }
   .outside .track { margin-left: calc(var(--pip) + 12px); }
   .outside .pip { left: calc(-1 * (var(--pip) + 12px)); }
+  /* Where the handle crosses the pip, the pip is cut by the same gap that splits the track.
+     --hx is the handle's left edge in the pip's own coordinates (100cqw = track width). */
+  .track { container-type: inline-size; }
+  .pip { --hx: calc(var(--pc) * (100cqw - var(--hw)) - var(--hw) - var(--gap) - 6px);
+         --cut: linear-gradient(90deg, #000 calc(var(--hx) - var(--gap)), transparent calc(var(--hx) - var(--gap)),
+                transparent calc(var(--hx) + var(--hw) + var(--gap)), #000 calc(var(--hx) + var(--hw) + var(--gap)));
+         -webkit-mask-image: var(--cut); mask-image: var(--cut); }
+  .outside .pip { -webkit-mask-image: none; mask-image: none; }
   .info { display: flex; gap: 6px; }
   .info:empty { display: none; }
   .chip { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; white-space: nowrap;
@@ -792,8 +796,6 @@ class ExpressiveSliderCard extends HTMLElement {
       inactive: on ? `color-mix(in srgb, ${active} 24%, ${TILE})` : TILE,
       onActive: rgb ? (isLight(rgb) ? "rgba(0,0,0,.75)" : "#fff") : "var(--text-primary-color, #fff)",
       pipOn: typeof pb === "string" ? pb : `color-mix(in srgb, ${active} ${pb ?? PIP_TINT}%, #000)`,
-      // Judged against the pip itself: the fill mixed with black by the tint.
-      pipFg: rgb && !whiteReads(rgb.map((c) => c * (typeof pb === "number" ? pb : PIP_TINT) / 100)) ? "rgba(0,0,0,.7)" : "rgba(255,255,255,.7)",
     };
   }
 
@@ -986,7 +988,7 @@ class ExpressiveSliderCard extends HTMLElement {
     this._syncStop();
     if (!this._pip.hidden) {
       this._pip.style.setProperty("--es-pip-bg", lit ? c.pipOn : this._pipOffBg);
-      this._pip.style.setProperty("--es-pip-fg", lit ? c.pipFg : "var(--secondary-text-color)");
+      this._pip.style.setProperty("--es-pip-fg", lit ? "rgba(255,255,255,.7)" : "var(--secondary-text-color)");
     }
   }
 
