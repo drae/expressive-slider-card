@@ -80,7 +80,7 @@
  *       radius: 20
  *     pip:
  *       size: 36               # the round background behind the icon
- *       background: 25         # number = % of the slider colour mixed with black while on; or a fixed colour
+ *       background: 90         # number = % of the slider colour mixed with black while on; or a fixed colour
  *     icon:
  *       size: 22
  *     glow:
@@ -103,7 +103,7 @@
  * snaps to 0 or 100%. A cover only sends when the slider is released.
  */
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 const FALLBACK_RGB = [255, 196, 140]; // warm white, for a light that reports no colour
 const SKY_RGB = [143, 195, 230]; // cover fill
 const VIOLET_RGB = [179, 157, 219]; // media player (volume) fill
@@ -118,7 +118,7 @@ const COVER_DEFAULTS = { fill: "open", presets: [0, 25, 50, 75, 100], preset_sty
   moving_handle: "target", stop_button: true, stagger: 400 };
 const GROUP_DEFAULTS = { band: "on", show: "band", value: "mean", label: "range", mode: "scale", targets: "on", stagger: 150 };
 const GLOW_DEFAULTS = { gap: 0, softness: 32, strength: 75, drag: 10, edge: 55, edge_width: 12 };
-const PIP_TINT = 25;
+const PIP_TINT = 90;
 const GROUP_PENDING_MS = 4000; // sent levels are shown until the lights report them, or this long after the last command
 const TARGET_STALE_MS = 8000;  // a cover target is dropped after this long without movement
 const TARGET_MAX_MS = 180000;  // and always after this long
@@ -278,7 +278,7 @@ const CSS_TEXT = `
   .val { font-size: var(--es-value-size, 18px); font-weight: 600; color: var(--primary-text-color); cursor: pointer;
          font-variant-numeric: tabular-nums; }
   .val.off { color: var(--secondary-text-color); }
-  .track { --hw: var(--es-handle-width, 4px); --gap: var(--es-gap, 6px); --r: var(--es-radius, 14px); --ir: var(--es-inner-radius, 6px);
+  .track { --hw: var(--es-handle-width, 4px); --gap: var(--es-gap, 6px); --r: var(--es-radius, 16px); --ir: var(--es-inner-radius, 6px);
            --pc: clamp(0, var(--es-p), 1); /* the settle overshoots slightly; keep the shape inside the track */
            position: relative; height: var(--es-height, 56px);
            touch-action: pan-y; cursor: pointer; outline: none; user-select: none; -webkit-user-select: none;
@@ -788,6 +788,8 @@ class ExpressiveSliderCard extends HTMLElement {
       inactive: on ? `color-mix(in srgb, ${active} 24%, ${TILE})` : TILE,
       onActive: rgb ? (isLight(rgb) ? "rgba(0,0,0,.75)" : "#fff") : "var(--text-primary-color, #fff)",
       pipOn: typeof pb === "string" ? pb : `color-mix(in srgb, ${active} ${pb ?? PIP_TINT}%, #000)`,
+      // The lit icon sits on a near-full-colour pip, so it needs the fill's contrast colour, softened.
+      pipFg: rgb && isLight(rgb) ? "rgba(0,0,0,.7)" : "rgba(255,255,255,.7)",
     };
   }
 
@@ -980,7 +982,7 @@ class ExpressiveSliderCard extends HTMLElement {
     this._syncStop();
     if (!this._pip.hidden) {
       this._pip.style.setProperty("--es-pip-bg", lit ? c.pipOn : this._pipOffBg);
-      this._pip.style.setProperty("--es-pip-fg", lit ? c.active : "var(--secondary-text-color)");
+      this._pip.style.setProperty("--es-pip-fg", lit ? c.pipFg : "var(--secondary-text-color)");
     }
   }
 

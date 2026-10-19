@@ -39,7 +39,7 @@ const drag = async (el, from, to) => { ptr(el, "pointerdown", from); ptr(el, "po
   ok(q(a, "ha-card").classList.contains("cover"), "cover class set");
   ok(q(a, ".val").textContent === "36%", "value 36%: " + q(a, ".val").textContent);
   ok(q(a, ".track").style.getPropertyValue("--es-active") === "rgb(143,195,230)", "sky fill by default");
-  ok(q(a, ".pip").style.getPropertyValue("--es-pip-bg").includes("25%"), "pip tinted while partly open");
+  ok(q(a, ".pip").style.getPropertyValue("--es-pip-bg").includes("90%"), "pip tinted while partly open");
   ok(q(a, "ha-state-icon").hidden && !q(a, ".pip .shade").hidden, "drawn shade replaces the state icon");
   ok(q(a, ".pip .shade svg rect:nth-child(2)")?.getAttribute("height") === "8", "36% open: fabric 8 of 12 down: " + q(a, ".pip .shade svg rect:nth-child(2)")?.getAttribute("height"));
   const ic = mk({ entity: "cover.s1", icon: "mdi:blinds" });
